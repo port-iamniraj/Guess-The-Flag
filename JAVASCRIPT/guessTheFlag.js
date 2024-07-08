@@ -5,22 +5,34 @@ const url = `https://flagcdn.com/en/codes.json`;
 let fetchedFLagData = {};
 const gameStartTime = 3;
 
-function fetchingFlagData() {
-    fetch(url)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok ' + response.statusText);
-            }
-            return response.json();
-        })
-        .then(data => {
-            fetchedFLagData = data;
+async function fetchingFlagData() {
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error('Network response was not ok ' + response.statusText);
+        }
+        fetchedFLagData = await response.json();
+        startGame(fetchedFLagData);
 
-            startGame(fetchedFLagData);
-        })
-        .catch(error => {
-            console.error('Error loading JSON:', error);
-        });
+    } catch (error) {
+        console.error('Error loading JSON:', error);
+    }
+
+    // fetch(url)
+    //     .then(response => {
+    //         if (!response.ok) {
+    //             throw new Error('Network response was not ok ' + response.statusText);
+    //         }
+    //         return response.json();
+    //     })
+    //     .then(data => {
+    //         fetchedFLagData = data;
+
+    //         startGame(fetchedFLagData);
+    //     })
+    //     .catch(error => {
+    //         console.error('Error loading JSON:', error);
+    //     });
 }
 
 function startGame(data) {
@@ -75,6 +87,33 @@ function startGame(data) {
         return shuffledOptions;
     }
 
+    const flagsContainer = document.createElement("div");
+    flagsContainer.classList.add("flags-container");
+
+    const flagBox = document.createElement("div");
+    flagBox.classList.add("flag-box");
+
+    const flagSVG = document.createElement("img");
+
+    flagBox.append(flagSVG);
+    flagsContainer.append(flagBox);
+
+    const optionContainer = document.createElement("div");
+    optionContainer.classList.add("option-container");
+
+    let option = {};
+    for (let i = 0; i <= 3; i++) {
+        option[i] = document.createElement("div");
+        option[i].classList.add("option");
+    }
+
+    const gameTimer = document.createElement("div");
+    gameTimer.classList.add("game-timer");
+
+    optionContainer.append(option[0], option[1], option[2], option[3]);
+    gameBackground.append(flagsContainer, optionContainer, gameTimer);
+
+
     function gameIsRunning() {
         let selectedFlag = selectFlag();
         let getOptionsArray = getOptions();
@@ -86,53 +125,78 @@ function startGame(data) {
         // console.log(randomOptions);
         // console.log(tempObjForConditionChecking.ans);
 
-        gameBackground.innerHTML = `
-        <div class="flags-container">
-            <div class="flag-box"><img src="https://flagcdn.com/${selectedFlag.flagCode}.svg"></div>
-        </div>
+        for (let opt in option) {
+            option[opt].classList.remove("green");
+        }
 
-        <div class="option-container">
-            <div class="option">${randomOptions.A}</div>
-            <div class="option">${randomOptions.B}</div>
-            <div class="option">${randomOptions.C}</div>
-            <div class="option">${randomOptions.D}</div>
-        </div>
-        
-        <div class="game-timer">${score}</div>`;
+        flagSVG.src = `https://flagcdn.com/${selectedFlag.flagCode}.svg`;
+
+        option[0].textContent = randomOptions.A;
+        option[1].textContent = randomOptions.B;
+        option[2].textContent = randomOptions.C;
+        option[3].textContent = randomOptions.D;
+
+        gameTimer.textContent = score;
+
+        console.log(gameBackground);
+
+        // gameBackground.innerHTML = `
+        // <div class="flags-container">
+        //     <div class="flag-box"><img src="https://flagcdn.com/${selectedFlag.flagCode}.svg"></div>
+        // </div>
+
+        // <div class="option-container">
+        //     <div class="option">${randomOptions.A}</div>
+        //     <div class="option">${randomOptions.B}</div>
+        //     <div class="option">${randomOptions.C}</div>
+        //     <div class="option">${randomOptions.D}</div>
+        // </div>
+
+        // <div class="game-timer">${score}</div>`;
     }
-
-    gameIsRunning();
 
     function intervalFunction() {
         stopGameInterval = setInterval(() => {
             gameIsRunning();
             console.log(stopGameInterval);
         }, 5000);
+
+        gameBackground.addEventListener("click", (e) => {
+            if (e.target.classList.contains("option")) {
+                if (e.target.textContent != tempObjForConditionChecking.ans) {
+                    clearInterval(stopGameInterval);
+                    e.target.classList.add("red");
+
+                    // console.log(e.target);
+                    // console.log(stopGameInterval);
+                    // console.log("wrong ans");
+                    // gameBackground.innerHTML = "wrong ans";
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1000);
+
+                    // mainPageBox.classList.remove("hide");
+                    // gameBackground.classList.add("hide");
+                } else {
+                    score++;
+                    clearInterval(stopGameInterval);
+
+                    e.target.classList.add("green");
+
+                    console.log(e.target);
+
+                    setTimeout(() => {
+                        gameIsRunning();
+                    }, 1000);
+
+                    // intervalFunction();
+                }
+            }
+        });
     }
 
+    gameIsRunning();
     intervalFunction();
-
-    gameBackground.addEventListener("click", (e) => {
-        if (e.target.classList.contains("option")) {
-            if (e.target.textContent === tempObjForConditionChecking.ans) {
-                score++;
-                clearInterval(stopGameInterval);
-
-                console.log(stopGameInterval);
-
-                gameIsRunning();
-
-                // intervalFunction();
-            } else {
-                clearInterval(stopGameInterval);
-                console.log(e.target);
-                gameBackground.innerHTML = "<div>wrong</div>";
-
-                mainPageBox.classList.remove("hide");
-                gameBackground.classList.add("hide");
-            }
-        }
-    });
 }
 
 mainPageBox.addEventListener("click", (e) => {
@@ -149,6 +213,7 @@ mainPageBox.addEventListener("click", (e) => {
                         <div class="timer">${x}</div>
                     </div>`;
             } else {
+                gameBackground.innerHTML = "";
                 fetchingFlagData();
                 clearInterval(startTimeInterval);
             }

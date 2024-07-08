@@ -19,6 +19,14 @@ html {
     display: block;
 }
 
+.green {
+    background-color: green !important;
+}
+
+.red {
+    background-color: red !important;
+}
+
 /* Utility Classes--------------------------------------------------- */
 
 .main-page-box {
@@ -72,7 +80,7 @@ html {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: left;
+    /* object-position: left; */
 }
 
 .option-container {
@@ -91,6 +99,7 @@ html {
     box-shadow: 0 7px 15px 0 rgba(0, 0, 0, .13), 0 1px 4px 0 rgba(0, 0, 0, .11);
     /* box-shadow: 0 1px 2px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.07), 0 4px 8px rgba(0, 0, 0, 0.07), 0 8px 16px rgba(0, 0, 0, 0.07), 0 16px 32px rgba(0, 0, 0, 0.07), 0 32px 64px rgba(0, 0, 0, 0.07); */
     cursor: pointer;
+    /
 }
 
 .option-container .option:hover {

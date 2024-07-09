@@ -3,11 +3,11 @@ const gameBackground = document.querySelector(".game-background");
 const score = document.querySelector(".score");
 
 const rightAnsSound = new Audio();
-rightAnsSound.src = "/SOUNDS/Correct-Answer.mp3";
+rightAnsSound.src = "./SOUNDS/Correct-Answer.mp3";
 const wrongAnsSound = new Audio();
-wrongAnsSound.src = "/SOUNDS/Wrong-Answer.mp3";
+wrongAnsSound.src = "./SOUNDS/Wrong-Answer.mp3";
 const countdown = new Audio();
-countdown.src = "/SOUNDS/countdown.mp3";
+countdown.src = "./SOUNDS/countdown.mp3";
 
 const url = `https://flagcdn.com/en/codes.json`;
 let fetchedFLagData = {};

@@ -1,8 +1,17 @@
 const mainPageBox = document.querySelector(".main-page-box");
 const gameBackground = document.querySelector(".game-background");
+const score = document.querySelector(".score");
+
+const rightAnsSound = new Audio();
+rightAnsSound.src = "/SOUNDS/Correct-Answer.mp3";
+const wrongAnsSound = new Audio();
+wrongAnsSound.src = "/SOUNDS/Wrong-Answer.mp3";
+const countdown = new Audio();
+countdown.src = "/SOUNDS/countdown.mp3";
 
 const url = `https://flagcdn.com/en/codes.json`;
 let fetchedFLagData = {};
+let timerActivate = false;
 const gameStartTime = 3;
 
 async function fetchingFlagData() {
@@ -107,12 +116,11 @@ function startGame(data) {
         option[i].classList.add("option");
     }
 
-    const gameTimer = document.createElement("div");
-    gameTimer.classList.add("game-timer");
+    const gameScore = document.createElement("div");
+    gameScore.classList.add("game-score");
 
     optionContainer.append(option[0], option[1], option[2], option[3]);
-    gameBackground.append(flagsContainer, optionContainer, gameTimer);
-
+    gameBackground.append(flagsContainer, optionContainer, gameScore);
 
     function gameIsRunning() {
         let selectedFlag = selectFlag();
@@ -136,9 +144,7 @@ function startGame(data) {
         option[2].textContent = randomOptions.C;
         option[3].textContent = randomOptions.D;
 
-        gameTimer.textContent = score;
-
-        console.log(gameBackground);
+        gameScore.textContent = score;
 
         // gameBackground.innerHTML = `
         // <div class="flags-container">
@@ -155,52 +161,107 @@ function startGame(data) {
         // <div class="game-timer">${score}</div>`;
     }
 
-    function intervalFunction() {
-        stopGameInterval = setInterval(() => {
-            gameIsRunning();
-            console.log(stopGameInterval);
-        }, 5000);
+    let gameTimerFunctionInterval;
+    let stopGameInterval;
 
-        gameBackground.addEventListener("click", (e) => {
-            if (e.target.classList.contains("option")) {
-                if (e.target.textContent != tempObjForConditionChecking.ans) {
-                    clearInterval(stopGameInterval);
-                    e.target.classList.add("red");
+    if (timerActivate) {
+        const gameTimer = document.createElement("div");
+        gameTimer.classList.add("game-timer");
+        gameBackground.append(gameTimer);
 
-                    // console.log(e.target);
-                    // console.log(stopGameInterval);
-                    // console.log("wrong ans");
-                    // gameBackground.innerHTML = "wrong ans";
-                    setTimeout(() => {
-                        location.reload();
-                    }, 1000);
-
-                    // mainPageBox.classList.remove("hide");
-                    // gameBackground.classList.add("hide");
-                } else {
-                    score++;
-                    clearInterval(stopGameInterval);
-
-                    e.target.classList.add("green");
-
-                    console.log(e.target);
-
-                    setTimeout(() => {
-                        gameIsRunning();
-                    }, 1000);
-
-                    // intervalFunction();
+        function gameTimerFunction() {
+            let gameTimerCount = 10;
+            countdown.play();
+            gameTimerFunctionInterval = setInterval(() => {
+                gameTimer.textContent = gameTimerCount--;
+                if (gameTimerCount == 0) {
+                    location.reload();
                 }
-            }
-        });
+            }, 1000);
+        }
+
+        function intervalFunction() {
+            stopGameInterval = setInterval(() => {
+                gameIsRunning();
+                if (timerActivate) {
+                    gameTimerFunction();
+                }
+            }, 10000);
+        }
+
+        gameTimerFunction();
+        intervalFunction();
     }
 
+    gameBackground.addEventListener("click", (e) => {
+        if (e.target.classList.contains("option")) {
+            if (e.target.textContent != tempObjForConditionChecking.ans) {
+                wrongAnsSound.play();
+
+                clearInterval(stopGameInterval);
+                e.target.classList.add("red");
+
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+
+                // mainPageBox.classList.remove("hide");
+                // gameBackground.classList.add("hide");
+            } else {
+                rightAnsSound.play();
+
+                score++;
+                localStorage.setItem("score", score);
+
+                if (timerActivate) {
+                    countdown.pause();
+                    countdown.currentTime = 0;
+                    clearInterval(stopGameInterval);
+                    clearInterval(gameTimerFunctionInterval);
+                }
+
+                e.target.classList.add("green");
+
+                setTimeout(() => {
+                    gameIsRunning();
+                }, 1000);
+
+                if (timerActivate) {
+                    gameTimerFunction();
+                    intervalFunction();
+                }
+            }
+        }
+    });
+
     gameIsRunning();
-    intervalFunction();
 }
 
+score.textContent = localStorage.getItem("score") || 0;
+
 mainPageBox.addEventListener("click", (e) => {
-    if (e.target.classList.contains("play-button")) {
+    if (e.target.classList.contains("streak-play")) {
+        mainPageBox.classList.add("hide");
+        gameBackground.classList.remove("hide");
+
+        let x = 3;
+        startTimeInterval = setInterval(() => {
+            if (x >= 0) {
+                gameBackground.innerHTML = `        
+                    <div class="timer-box">
+                        <div class="timer-text">Game Starts in</div>
+                        <div class="timer">${x}</div>
+                    </div>`;
+            } else {
+                gameBackground.innerHTML = "";
+                fetchingFlagData();
+                clearInterval(startTimeInterval);
+            }
+            x--;
+        }, 1000);
+    }
+    else if (e.target.classList.contains("time-play")) {
+        timerActivate = true;
         mainPageBox.classList.add("hide");
         gameBackground.classList.remove("hide");
 

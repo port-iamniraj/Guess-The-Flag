@@ -6,7 +6,7 @@
 
 html {
     font-size: 62.5%;
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: cursive, Helvetica, sans-serif;
 }
 
 /* Utility Classes--------------------------------------------------- */
@@ -42,17 +42,37 @@ html {
     margin-block: 0.5em;
 }
 
-.button-box {
-    /* width: 50px; */
-    /* border: 2px solid red; */
+.game-choice {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    width: 20%;
+    margin: 5rem auto;
+}
+
+.game-choice .game-choice-box {
+    height: 70px;
+    width: 70px;
+    text-align: center;
+    font-size: 2rem;
+    cursor: pointer;
+}
+
+.game-choice .game-choice-box img {
+    height: 100%;
+    width: 100%;
+}
+
+.score-box {
     text-align: center;
 }
 
-.play-button {
+.score-box .score-text {
     font-size: 2rem;
-    padding: 0.5em 2em;
-    border-radius: 10px;
-    cursor: pointer;
+}
+
+.score-box .score {
+    font-size: 5rem;
 }
 
 .game-background {
@@ -69,7 +89,7 @@ html {
 
 .flags-container .flag-box {
     height: 200px;
-    max-width: 35%;
+    width: 30%;
     margin-inline: auto;
     /* border: 2px solid #000; */
     /* box-shadow: 0 26px 58px 0 rgba(0, 0, 0, .22), 0 5px 14px 0 rgba(0, 0, 0, .18); */
@@ -107,10 +127,24 @@ html {
     background-color: orange;
 }
 
-.game-timer {
+.game-score {
     font-size: 3rem;
     position: absolute;
     right: 5%;
+    top: 5%;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 7px 15px 0 rgba(0, 0, 0, .13), 0 1px 4px 0 rgba(0, 0, 0, .11);
+}
+
+.game-timer {
+    font-size: 3rem;
+    position: absolute;
+    left: 5%;
     top: 5%;
     width: 70px;
     height: 70px;

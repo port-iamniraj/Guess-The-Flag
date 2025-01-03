@@ -46,9 +46,9 @@ async function fetchingFlagData() {
 
 function startGame(data) {
     const totalFlags = 305;
-    let score = 0;
     const flagNameDataArray = [];
     const tempObjForConditionChecking = {};
+    let score = 0;
 
     for (let flagName in data) {
         flagNameDataArray.push(data[flagName]);

@@ -1,5 +1,10 @@
-import Homepage from "../components/Homepage";
+import React, { useState } from "react";
+
+import Homepage from "../components/HomePage";
+import GamePlay from "../components/GamePlay";
 
 export default function App() {
-    return <Homepage />;
+    const [startGame, setStartGame] = useState(true);
+
+    return startGame ? <GamePlay /> : <Homepage setStartGame={setStartGame} />;
 }

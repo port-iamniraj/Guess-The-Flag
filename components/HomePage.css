@@ -45,12 +45,13 @@ html {
 .game-choice {
     display: flex;
     justify-content: space-between;
-    align-items: baseline;
-    width: 20%;
+    align-items: center;
+    width: 200px;
     margin: 5rem auto;
 }
 
 .game-choice .game-choice-box {
+    flex-shrink: 0;
     height: 70px;
     width: 70px;
     text-align: center;
@@ -64,6 +65,8 @@ html {
 }
 
 .score-box {
+    width: 100px;
+    margin-inline: auto;
     text-align: center;
 }
 
@@ -104,22 +107,20 @@ html {
 }
 
 .option-container {
-    width: 70%;
+    width: 60%;
     margin-inline: auto;
 }
 
 .option-container .option {
-    font-size: 2rem;
+    font-size: 1.8rem;
     text-align: center;
-    height: 50px;
     width: 100%;
-    margin-block: 1em;
-    padding-block: 0.6em;
+    margin-block: 0.7em;
+    padding-block: 0.5em;
     /* border: 2px solid #000; */
     box-shadow: 0 7px 15px 0 rgba(0, 0, 0, .13), 0 1px 4px 0 rgba(0, 0, 0, .11);
     /* box-shadow: 0 1px 2px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.07), 0 4px 8px rgba(0, 0, 0, 0.07), 0 8px 16px rgba(0, 0, 0, 0.07), 0 16px 32px rgba(0, 0, 0, 0.07), 0 32px 64px rgba(0, 0, 0, 0.07); */
     cursor: pointer;
-    /
 }
 
 .option-container .option:hover {
@@ -141,8 +142,7 @@ html {
     box-shadow: 0 7px 15px 0 rgba(0, 0, 0, .13), 0 1px 4px 0 rgba(0, 0, 0, .11);
 }
 
-.game-timer {
-    font-size: 3rem;
+.sound-box {
     position: absolute;
     left: 5%;
     top: 5%;
@@ -153,6 +153,27 @@ html {
     align-items: center;
     justify-content: center;
     box-shadow: 0 7px 15px 0 rgba(0, 0, 0, .13), 0 1px 4px 0 rgba(0, 0, 0, .11);
+}
+
+.sound-box img {
+    width: 100%;
+}
+
+.game-timer {
+    width: 40%;
+    height: 1rem;
+    border-radius: 2rem;
+    margin-inline: auto;
+    margin-top: 1rem;
+    background-color: #ff0000;
+}
+
+.timer-line {
+    height: 100%;
+    border-radius: 2rem;
+    border: 2px solid #4caf50;
+    background-color: #4caf50;
+    transition: width 1s linear;
 }
 
 .timer-box {

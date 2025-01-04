@@ -1,80 +1,151 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
-export default function GamePage() {
+import volumePNG from "../src/assets/volume.png";
+import volumeMutePNG from "../src/assets/volume-mute.png";
+
+export default function GamePage({ setStartGame, score, setScore, gameType }) {
     const [countryData, setCountryData] = useState(null);
-    const [score, setScore] = useState(0);
+    const [quiz, setQuiz] = useState(null);
+    const [selectedOption, setSelectedOption] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [timer, setTimer] = useState(10);
+    const [enableSound, setEnableSound] = useState(false);
+
+    const rightAnsSound = useRef(new Audio("./SOUNDS/Correct-Answer.mp3"));
+    const wrongAnsSound = useRef(new Audio("./SOUNDS/Wrong-Answer.mp3"));
+
+    useEffect(() => {
+        rightAnsSound.current.load();
+        wrongAnsSound.current.load();
+    }, []);
+
+    function generateQuiz(countryData) {
+        const totolFlags = Object.keys(countryData).length - 1;
+        const selectFlagIndex = Math.round(Math.random() * totolFlags);
+        const flagNameDataArray = Object.values(countryData);
+
+        const selectedCountry = {
+            countryCode: Object.keys(countryData)[selectFlagIndex],
+            countryName: flagNameDataArray[selectFlagIndex]
+        };
+
+        const options = new Set();
+
+        // putting 3 random options in Set
+        while (options.size < 3) {
+            const randomOption = flagNameDataArray[Math.round(Math.random() * totolFlags)];
+
+            // Ensuring the right answer isn’t duplicated in the random options.
+            if (randomOption !== selectedCountry.countryName) options.add(randomOption);
+        }
+
+        options.add(selectedCountry.countryName);
+
+        // shuffling options
+        const shuffledOptions = Array.from(options).sort(() => Math.random() - 0.5);
+
+        return {
+            country: selectedCountry,
+            options: {
+                A: shuffledOptions[0],
+                B: shuffledOptions[1],
+                C: shuffledOptions[2],
+                D: shuffledOptions[3]
+            }
+        };
+    };
 
     useEffect(() => {
         fetch("https://flagcdn.com/en/codes.json")
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) throw new Error("Failed to fetch data");
+                return res.json();
+            })
             .then((countryData) => {
                 setCountryData(countryData);
+                setQuiz(generateQuiz(countryData));
+                setLoading(false);
+            })
+            .catch(error => {
+                console.log(error);
+                setLoading(false);
             });
     }, []);
 
-    let quiz = {};
-    if (countryData) {
-        const totolFlags = Object.keys(countryData).length - 1;
-        const selectFlag = Math.round(Math.random() * totolFlags);
-        const flagNameDataArray = Object.values(countryData).map(countryName => countryName);
-        const options = [];
-        const selectedCountry = {};
-
-        // putting 3 random options in empty array
-        for (let i = 0; i < 3; i++) {
-            options.push(flagNameDataArray[Math.round(Math.random() * totolFlags)]);
-        }
-
-        // getting the country data from choosen index
-        Object.entries(countryData).forEach(([countryCode, countryName], index) => {
-            if (index === selectFlag) {
-                selectedCountry.countryCode = countryCode;
-                selectedCountry.countryName = countryName;
-
-                // putting 4th option in array (the right one)
-                options.push(countryName);
+    if (gameType === "time") {
+        useEffect(() => {
+            if (timer <= 0) {
+                setTimeout(() => {
+                    setStartGame(false);// End game if timer reaches 0
+                }, 1000);
+                return;
             }
-        });
 
-        // shuffling options
-        for (let i = options.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [options[i], options[j]] = [options[j], options[i]];
-        }
+            const stopTimer = setInterval(() => {
+                setTimer((prevState) => prevState - 1);
+            }, 1000);
 
-        const shuffledOptions = {
-            A: options[0],
-            B: options[1],
-            C: options[2],
-            D: options[3]
-        };
-
-        quiz.country = selectedCountry;
-        quiz.options = shuffledOptions;
+            return () => {
+                clearInterval(stopTimer); // Cleanup on unmount or timer reset
+            };
+        }, [timer, setStartGame]);
     }
 
     function handleAnswer(e) {
-        console.dir(e.target);
-        if (e.target.textContent === quiz.country.countryName) {
-            e.target.classList.add("green");
-            setScore((prevState) => prevState + 1);
+        const selectedAnswer = e.target.textContent;
+        setSelectedOption(selectedAnswer);
+
+        if (selectedAnswer === quiz.country.countryName) {
+            if (enableSound) rightAnsSound.current.play();
+
+            setTimeout(() => {
+                setQuiz(generateQuiz(countryData));
+                setScore((prevState) => prevState + 1);
+                setSelectedOption(null);
+
+                if (gameType === "time") setTimer(10); // Reseting the timer on correct answer
+            }, 1000);
         } else {
-            e.target.classList.add("red");
+            if (enableSound) wrongAnsSound.current.play();
+
+            setTimeout(() => {
+                setStartGame(false);
+            }, 1000);
         }
     }
 
-    return countryData === null ? <div>Loading</div> : <div className="game-background">
+    if (loading) return <div>Loading...</div>;
+
+    return <div className="game-background">
         <div className="flags-container">
             <div className="flag-box">
-                <img src={`https://flagcdn.com/${quiz.country.countryCode}.svg`} />
+                <img src={`https://flagcdn.com/${quiz.country.countryCode}.svg`} alt="Country flag" />
             </div>
 
+            {
+                gameType === "time" ? <div className="game-timer">
+                    <div className="timer-line" style={{ width: `${(timer / 10) * 100}%` }}></div>
+                </div> : ""
+            }
+
             <div className="option-container">
-                {Object.values(quiz.options).map((countryName, i) => {
-                    return <div key={countryName} onClick={handleAnswer} className={`option`}>{countryName}</div>;
+                {Object.values(quiz.options).map((countryName) => {
+                    return <div
+                        key={countryName}
+                        onClick={handleAnswer}
+                        className={`option 
+                            ${selectedOption === countryName ? countryName === quiz.country.countryName ? "green" : "red" : ""}`}
+                        role="button"
+                        aria-label={countryName}
+                    >
+                        {countryName}
+                    </div>;
                 })}
             </div>
         </div>
         <div className="game-score">{score}</div>
+        <div className="sound-box" onClick={() => setEnableSound(!enableSound)}>
+            <img src={enableSound ? volumePNG : volumeMutePNG} alt="volume" />
+        </div>
     </div>;
 }

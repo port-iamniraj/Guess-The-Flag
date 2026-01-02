@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 
-import volumePNG from "../src/assets/volume.png";
-import volumeMutePNG from "../src/assets/volume-mute.png";
+import volumePNG from "/assets/volume.png";
+import volumeMutePNG from "/assets/volume-mute.png";
 
 export default function GamePage({ setStartGame, score, setScore, gameType }) {
     const [countryData, setCountryData] = useState(null);
@@ -11,8 +11,8 @@ export default function GamePage({ setStartGame, score, setScore, gameType }) {
     const [timer, setTimer] = useState(10);
     const [enableSound, setEnableSound] = useState(false);
 
-    const rightAnsSound = useRef(new Audio("./SOUNDS/Correct-Answer.mp3"));
-    const wrongAnsSound = useRef(new Audio("./SOUNDS/Wrong-Answer.mp3"));
+    const rightAnsSound = useRef(new Audio("./media/Correct-Answer.mp3"));
+    const wrongAnsSound = useRef(new Audio("./media/Wrong-Answer.mp3"));
 
     useEffect(() => {
         rightAnsSound.current.load();

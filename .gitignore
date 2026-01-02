@@ -1,2 +1,4 @@
 node_modules
-JSON
+.json
+dist
+.env

@@ -1,9 +1,12 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 
 import volumePNG from "/assets/volume.png";
 import volumeMutePNG from "/assets/volume-mute.png";
+import { GameStateContext } from "../context/gameStateContext";
 
-export default function GamePage({ setStartGame, score, setScore, gameType }) {
+export default function GamePage() {
+    const { setStartGame, gameType } = useContext(GameStateContext);
+    const [score, setScore] = useState(0);
     const [countryData, setCountryData] = useState(null);
     const [quiz, setQuiz] = useState(null);
     const [selectedOption, setSelectedOption] = useState(null);
@@ -67,7 +70,6 @@ export default function GamePage({ setStartGame, score, setScore, gameType }) {
                 setLoading(false);
             })
             .catch(error => {
-                console.log(error);
                 setLoading(false);
             });
     }, []);
@@ -108,6 +110,14 @@ export default function GamePage({ setStartGame, score, setScore, gameType }) {
         } else {
             if (enableSound) wrongAnsSound.current.play();
 
+            const prevScore = localStorage.getItem("score") ? JSON.parse(localStorage.getItem("score")) : { streak: 0, time: 0 };
+            if (gameType === "streak" && prevScore.streak < score) {
+                localStorage.setItem("score", JSON.stringify({ ...prevScore, streak: score }));
+            }
+            if (gameType === "time" && prevScore.time < score) {
+                localStorage.setItem("score", JSON.stringify({ ...prevScore, time: score }));
+            }
+
             setTimeout(() => {
                 setStartGame(false);
             }, 1000);
@@ -116,36 +126,40 @@ export default function GamePage({ setStartGame, score, setScore, gameType }) {
 
     if (loading) return <div>Loading...</div>;
 
-    return <div className="game-background">
-        <div className="flags-container">
-            <div className="flag-box">
-                <img src={`https://flagcdn.com/${quiz.country.countryCode}.svg`} alt="Country flag" />
-            </div>
+    return (
+        <div className="game-background">
+            <div className="flags-container">
+                <div className="flag-box">
+                    <img src={`https://flagcdn.com/${quiz.country.countryCode}.svg`} alt="Country flag" />
+                </div>
 
-            {
-                gameType === "time" ? <div className="game-timer">
-                    <div className="timer-line" style={{ width: `${(timer / 10) * 100}%` }}></div>
-                </div> : ""
-            }
+                {
+                    gameType === "time" ? <div className="game-timer">
+                        <div className="timer-line" style={{ width: `${(timer / 10) * 100}%` }}></div>
+                    </div> : ""
+                }
 
-            <div className="option-container">
-                {Object.values(quiz.options).map((countryName) => {
-                    return <div
-                        key={countryName}
-                        onClick={handleAnswer}
-                        className={`option 
+                <div className="option-container">
+                    {Object.values(quiz.options).map((countryName) => {
+                        return <div
+                            key={countryName}
+                            onClick={handleAnswer}
+                            className={`option 
                             ${selectedOption === countryName ? countryName === quiz.country.countryName ? "green" : "red" : ""}`}
-                        role="button"
-                        aria-label={countryName}
-                    >
-                        {countryName}
-                    </div>;
-                })}
+                            role="button"
+                            aria-label={countryName}
+                        >
+                            {countryName}
+                        </div>;
+                    })}
+                </div>
+            </div>
+            <div className="game-content">
+                <div className="sound-box" onClick={() => setEnableSound(!enableSound)}>
+                    <img src={enableSound ? volumePNG : volumeMutePNG} alt="volume" />
+                </div>
+                <div className="game-score">{score}</div>
             </div>
         </div>
-        <div className="game-score">{score}</div>
-        <div className="sound-box" onClick={() => setEnableSound(!enableSound)}>
-            <img src={enableSound ? volumePNG : volumeMutePNG} alt="volume" />
-        </div>
-    </div>;
+    );
 }

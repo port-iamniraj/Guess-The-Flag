@@ -1,42 +1,64 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import volumePNG from "/assets/volume.png";
 import volumeMutePNG from "/assets/volume-mute.png";
-import { GameStateContext } from "../context/gameStateContext";
+import { useGameState } from "../context/gameStateContext";
+
+type CountryDataType = {
+    [key: string]: string;
+}
+
+type QuizType = {
+    country: {
+        countryCode: string;
+        countryName: string;
+    };
+    options: {
+        A: string;
+        B: string;
+        C: string;
+        D: string;
+    };
+}
+
+type Score = {
+    streak: number;
+    time: number;
+};
 
 export default function GamePage() {
-    const { setStartGame, gameType } = useContext(GameStateContext);
+    const { setStartGame, gameType } = useGameState()
     const [score, setScore] = useState(0);
-    const [countryData, setCountryData] = useState(null);
-    const [quiz, setQuiz] = useState(null);
-    const [selectedOption, setSelectedOption] = useState(null);
+    const [countryData, setCountryData] = useState<CountryDataType | null>(null);
+    const [quiz, setQuiz] = useState<QuizType | null>(null);
+    const [selectedOption, setSelectedOption] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [timer, setTimer] = useState(10);
     const [enableSound, setEnableSound] = useState(false);
 
-    const rightAnsSound = useRef(new Audio("./media/Correct-Answer.mp3"));
-    const wrongAnsSound = useRef(new Audio("./media/Wrong-Answer.mp3"));
+    const rightAnsSound = useRef<HTMLAudioElement>(new Audio("./media/Correct-Answer.mp3"));
+    const wrongAnsSound = useRef<HTMLAudioElement>(new Audio("./media/Wrong-Answer.mp3"));
 
     useEffect(() => {
         rightAnsSound.current.load();
         wrongAnsSound.current.load();
     }, []);
 
-    function generateQuiz(countryData) {
-        const totolFlags = Object.keys(countryData).length - 1;
-        const selectFlagIndex = Math.round(Math.random() * totolFlags);
+    function generateQuiz(countryData: CountryDataType): QuizType {
+        const totalFlags = Object.keys(countryData).length - 1;
+        const selectFlagIndex = Math.round(Math.random() * totalFlags);
         const flagNameDataArray = Object.values(countryData);
 
         const selectedCountry = {
-            countryCode: Object.keys(countryData)[selectFlagIndex],
-            countryName: flagNameDataArray[selectFlagIndex]
+            countryCode: Object.keys(countryData)[selectFlagIndex]!,
+            countryName: flagNameDataArray[selectFlagIndex]!
         };
 
-        const options = new Set();
+        const options = new Set<string>();
 
         // putting 3 random options in Set
         while (options.size < 3) {
-            const randomOption = flagNameDataArray[Math.round(Math.random() * totolFlags)];
+            const randomOption = flagNameDataArray[Math.round(Math.random() * totalFlags)]!;
 
             // Ensuring the right answer isn’t duplicated in the random options.
             if (randomOption !== selectedCountry.countryName) options.add(randomOption);
@@ -50,10 +72,10 @@ export default function GamePage() {
         return {
             country: selectedCountry,
             options: {
-                A: shuffledOptions[0],
-                B: shuffledOptions[1],
-                C: shuffledOptions[2],
-                D: shuffledOptions[3]
+                A: shuffledOptions[0]!,
+                B: shuffledOptions[1]!,
+                C: shuffledOptions[2]!,
+                D: shuffledOptions[3]!
             }
         };
     };
@@ -64,37 +86,39 @@ export default function GamePage() {
                 if (!res.ok) throw new Error("Failed to fetch data");
                 return res.json();
             })
-            .then((countryData) => {
+            .then((countryData: CountryDataType) => {
                 setCountryData(countryData);
                 setQuiz(generateQuiz(countryData));
                 setLoading(false);
             })
-            .catch(error => {
+            .catch(() => {
                 setLoading(false);
             });
     }, []);
 
-    if (gameType === "time") {
-        useEffect(() => {
-            if (timer <= 0) {
-                setTimeout(() => {
-                    setStartGame(false);// End game if timer reaches 0
-                }, 1000);
-                return;
-            }
+    useEffect(() => {
+        if (gameType !== "time") return;
 
-            const stopTimer = setInterval(() => {
-                setTimer((prevState) => prevState - 1);
+        if (timer <= 0) {
+            setTimeout(() => {
+                setStartGame(false);// End game if timer reaches 0
             }, 1000);
+            return;
+        }
 
-            return () => {
-                clearInterval(stopTimer); // Cleanup on unmount or timer reset
-            };
-        }, [timer, setStartGame]);
-    }
+        const stopTimer = setInterval(() => {
+            setTimer((prev) => prev - 1);
+        }, 1000);
 
-    function handleAnswer(e) {
-        const selectedAnswer = e.target.textContent;
+        return () => {
+            clearInterval(stopTimer);
+        };
+    }, [timer, gameType, setStartGame]);
+
+    function handleAnswer(e: React.MouseEvent<HTMLDivElement>) {
+        if (!quiz || !countryData) return;
+
+        const selectedAnswer = e.currentTarget.textContent!;
         setSelectedOption(selectedAnswer);
 
         if (selectedAnswer === quiz.country.countryName) {
@@ -110,7 +134,9 @@ export default function GamePage() {
         } else {
             if (enableSound) wrongAnsSound.current.play();
 
-            const prevScore = localStorage.getItem("score") ? JSON.parse(localStorage.getItem("score")) : { streak: 0, time: 0 };
+            const prevStoredScore = localStorage.getItem("score")
+            const prevScore: Score = prevStoredScore ? JSON.parse(prevStoredScore) : { streak: 0, time: 0 };
+
             if (gameType === "streak" && prevScore.streak < score) {
                 localStorage.setItem("score", JSON.stringify({ ...prevScore, streak: score }));
             }
@@ -124,7 +150,7 @@ export default function GamePage() {
         }
     }
 
-    if (loading) return <div>Loading...</div>;
+    if (!quiz || !countryData || loading) return <div>Loading...</div>;
 
     return (
         <div className="game-background">
@@ -134,9 +160,10 @@ export default function GamePage() {
                 </div>
 
                 {
-                    gameType === "time" ? <div className="game-timer">
+                    gameType === "time" &&
+                    <div className="game-timer">
                         <div className="timer-line" style={{ width: `${(timer / 10) * 100}%` }}></div>
-                    </div> : ""
+                    </div>
                 }
 
                 <div className="option-container">

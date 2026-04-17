@@ -1,5 +1,3 @@
-import React, { useState } from "react";
-
 import "./style.css";
 import GameWrapper from "./components/GameWrapper";
 import GameStateProvider from "./context/gameStateContext";

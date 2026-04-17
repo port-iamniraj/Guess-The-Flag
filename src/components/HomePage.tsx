@@ -1,14 +1,36 @@
-import React, { useContext } from "react";
+import { useContext } from "react";
 
 import fire from "/assets/fire.png";
 import timerBomb from "/assets/timer-bomb.png";
 
 import gtfIcon from "/assets/gtf.png";
-import { GameStateContext } from "../context/gameStateContext";
+import { useGameState } from "../context/gameStateContext";
+
+type Score = {
+    streak: number;
+    time: number;
+};
 
 export default function HomePage() {
-    const { setStartGame, setGameType } = useContext(GameStateContext);
-    const score = localStorage.getItem("score") ? JSON.parse(localStorage.getItem("score")) : { streak: 0, time: 0 };
+    const { setStartGame, setGameType } = useGameState();
+
+    // # Simple
+    const storedScore = localStorage.getItem("score");
+    const score: Score = storedScore
+        ? JSON.parse(storedScore)
+        : { streak: 0, time: 0 };
+
+
+    // # Better way to handle potential JSON parsing errors
+    // let score: Score;
+    // try {
+    //     const storedScore = localStorage.getItem("score");
+    //     score = storedScore
+    //         ? JSON.parse(storedScore)
+    //         : { streak: 0, time: 0 };
+    // } catch {
+    //     score = { streak: 0, time: 0 };
+    // }
 
     return (
         <div className="homepage-container">

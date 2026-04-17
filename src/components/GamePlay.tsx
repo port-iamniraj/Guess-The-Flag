@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 import GameStartingPage from "./GameStartingPage";
-import GamePage from "./Gamepage";
+import GamePage from "./GamePage";
 
 export default function GamePlay() {
     const [play, setPlay] = useState(false);

@@ -8,8 +8,8 @@ Built with a modern React architecture and fully typed using TypeScript for reli
 ## 📸 Preview
 
 <p align="center">
-  <img src="./public/assets/home-page.png" width="45%" />
-  <img src="./public/assets/game-page.png" width="45%" />
+  <img src="./public/assets/home-page.webp" width="45%" />
+  <img src="./public/assets/game-page.webp" width="45%" />
 </p>
 
 ---
